@@ -1,12 +1,13 @@
 import asyncio
+import os
 
-import arcade_slack
 from agents import Agent, Runner
+from arcade_slack.tools.chat import send_dm_to_user
 
 from wrappers import arcade_tool_wrapper
 
 
-SLACK_USER_ID = "U086XD0GGCW"
+SLACK_USER_ID = os.getenv("SLACK_USER_ID")
 
 
 async def main():
@@ -14,11 +15,15 @@ async def main():
         name="Slack agent",
         instructions="You are a helpful assistant that can assist with Slack messages, channels, and users.",
         model="gpt-4o-mini",
-        tools=[arcade_tool_wrapper(arcade_slack.tools.chat.send_dm_to_user, "arcade_slack")],
+        tools=[arcade_tool_wrapper(send_dm_to_user, "arcade_slack")],
     )
+
+    username = input("Send a DM to the username: ")
+    message = input("Message: ")
+
     result = await Runner.run(
         starting_agent=slack_agent,
-        input="Send a DM to the user 'sam' saying 'Hello, from OpenAI Agents SDK!'",
+        input=f"Send a DM to the user '{username}' saying '{message}'",
         context={"user_id": SLACK_USER_ID},
     )
     print(result.final_output)
